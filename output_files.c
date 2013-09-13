@@ -42,7 +42,7 @@ void WriteResultsFile(FILE * resultsFile,Graph * graph) {
 	fprintf(resultsFile,"Average weight of an edge within clusters: %.3f\n",results->avg_weight_within_clusters);
 	fprintf(resultsFile,"Average weight of an edge between clusters: %.3f\n",results->avg_weight_between_clusters);
 	for (i=0; i<results->num_of_clusters; i++) {
-		fprintf(resultsFile,"Cluster %d score: %.3f diameter: %d \n",
+		fprintf(resultsFile,"Cluster %d score: %.3f diameter: %d\n",
 				(results->clusters)[i].ID, (results->clusters)[i].score, (results->clusters)[i].diameter);
 	}
 }
