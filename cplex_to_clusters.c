@@ -17,7 +17,22 @@ int get_results(Graph *graph){
 		return 1;
 	}
 	remove_edges(graph);
+	if(graph->vertexCounter == 2 && graph->edgeOriginal==1) {
+		TwoVerticesOneEdgeCase(graph);
+	}
 	return 0;
+}
+
+void TwoVerticesOneEdgeCase(Graph * graph) {
+	results->num_of_clusters = 1;
+	results->avg_weight_within_clusters = GetEdgeWeightByOriginals(graph,0,1);
+	results->avg_weight_between_clusters = 0;
+	(results->clusters)[0].ID = 1;
+	(results->clusters)[0].num_of_ver = 2;
+	(results->clusters)[0].diameter = 1;
+	(results->clusters)[0].score = GetEdgeWeightByOriginals(graph,0,1);
+	GetVertex(graph,0)->clusterID = 1;
+	GetVertex(graph,1)->clusterID = 1;
 }
 
 void set_score(){

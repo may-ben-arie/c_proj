@@ -27,5 +27,7 @@ void set_avg_weight(int *vertex_clusters_id);
 void set_clusters_diameter(Graph *graph);
 int get_vertex_diameter(int vertex_ID, Graph *graph);
 void print_clusters();
+void TwoVerticesOneEdgeCase(Graph * graph);
+
 
 #endif

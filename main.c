@@ -97,7 +97,7 @@ void InitializeGraph(Graph * graph, double C) {
 
 void ReadNetworkFile(FILE * networkFile, Graph * graph) {
 
-	int lineNumber = 0;
+	int lineNumber = 0, isEmptyFile = 0;
 	char line[LINE_LENGTH];
 	char command[LINE_LENGTH];
 	char param1[LINE_LENGTH], param2[LINE_LENGTH], param3[LINE_LENGTH];
@@ -106,6 +106,7 @@ void ReadNetworkFile(FILE * networkFile, Graph * graph) {
     	sscanf(line,"%s %s %s %s",command, param1, param2, param3);
     	lineNumber++;
     	if (!strcmp(command, "add_vertex")) {
+    		isEmptyFile = 1;
     		if (VerifyNewVertexToGraph(graph,param1,param2,param3)) {
     			AddVertexToGraph(graph,param1);
     		}
@@ -129,6 +130,11 @@ void ReadNetworkFile(FILE * networkFile, Graph * graph) {
     	strcpy(param1,"");
     	strcpy(param2,"");
     	strcpy(param3,"");
+    }
+
+    if(isEmptyFile == 0) {
+    	printf("Dear User: Network file does not contain any vertices.\n");
+    	exit(1);
     }
 }
 
@@ -178,12 +184,6 @@ int main(int argc, char *argv[]) {
 	networkFile = fopen(networkFilePath,"r");
 	VerifyFile(networkFile, "network");
 
-	strcpy(resultsFilePath,argv[2]);
-	strcat(resultsFilePath,"results");
-
-	resultsFile = fopen(resultsFilePath,"w");
-	VerifyFile(resultsFile,"results");
-
 	Graph *graph = (Graph*)malloc(1 * sizeof(Graph));
 	if (graph == NULL) {
 			perror("Error: failed allocating memory for the graph.\n");
@@ -207,6 +207,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	get_results(graph);
+
+	strcpy(resultsFilePath,argv[2]);
+	strcat(resultsFilePath,"results");
+
+	resultsFile = fopen(resultsFilePath,"w");
+	VerifyFile(resultsFile,"results");
 
 	WriteResultsFile(resultsFile,graph);
 
