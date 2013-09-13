@@ -222,8 +222,6 @@ int main(int argc, char *argv[]) {
 
 	WriteXGMMLFiles(clusteringSolutionFile, bestClustersFile, graph);
 
-	//Hi May
-
 	free_cplex_data();
 
 	fclose(networkFile);
