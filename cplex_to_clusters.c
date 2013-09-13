@@ -11,11 +11,12 @@ int get_results(Graph *graph){
 		perror("Error: Failed to allocate memory");
 		return 1;
 	}
+
 	set_score();
 	if (set_clusters(graph)){
 		return 1;
 	}
-
+	remove_edges(graph);
 	return 0;
 }
 
@@ -47,7 +48,6 @@ int set_clusters(Graph *graph){
 	create_clusters_array(graph,vertex_clusters_id);
 	sort_clusters(graph,vertex_clusters_id);
 	set_avg_weight(vertex_clusters_id);
-	remove_edges(graph);
 	set_clusters_diameter(graph);
 	print_clusters();
 	return 0;
@@ -146,7 +146,7 @@ int new_ID_for_old_ID(int old_id){
 void remove_edges(Graph *graph){
 	int i;
 	for (i=0;i<numcols;i++){
-		if (edge_arr[i].weight >=0 && !IS_VALUE_1(x[i])){
+		if (edge_arr[i].weight >0 && !IS_VALUE_1(x[i])){
 			DeleteEdgeFromGraph(graph,edge_arr[i].vertexID1,edge_arr[i].vertexID2);
 		}
 	}
@@ -159,7 +159,7 @@ void set_avg_weight(int *vertex_clusters_id){
 	results->avg_weight_within_clusters = 0;
 
 	for (i=0;i<numcols;i++){
-		if (edge_arr[i].weight < 0){
+		if (edge_arr[i].weight <= 0){
 			continue;
 		}
 		ver_ID1 = edge_arr[i].vertexID1;
