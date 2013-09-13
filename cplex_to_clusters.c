@@ -48,6 +48,8 @@ int set_clusters(Graph *graph){
 	sort_clusters(graph,vertex_clusters_id);
 	set_avg_weight(vertex_clusters_id);
 	remove_edges(graph);
+	set_clusters_diameter(graph);
+	print_clusters();
 	return 0;
 }
 
@@ -179,6 +181,82 @@ void set_avg_weight(int *vertex_clusters_id){
 	printf("\navg_weight_between_clusters=%f",results->avg_weight_between_clusters);
 	printf("\navg_weight_within_clusters=%f",results->avg_weight_within_clusters);
 	printf("\n");
+}
+
+int get_vertex_diameter(int vertex_ID, Graph *graph){
+	int max = 0;
+	int *queue,*dist;
+	int queue_index = 0;
+	int i,last_in_queue;
+	int cluster_ID = GetVertex(graph,vertex_ID)->clusterID;
+	Neighbor *neighbor;
+
+	dist = malloc(graph->vertexCounter * sizeof(int));
+	queue = malloc(graph->vertexCounter * sizeof(int));
+	if (queue == NULL || dist == NULL){
+		perror("Error: Failed to allocate memory");
+		return 1;
+	}
+	queue[0] = -1;
+
+	for(i=0;i<graph->vertexCounter;i++){
+		if (GetVertex(graph,i)->clusterID == cluster_ID){
+			dist[i] = graph->vertexCounter;
+		}else{
+			dist[i] = -1;
+		}
+	}
+
+	dist[vertex_ID] = 0;
+	queue[queue_index] = vertex_ID;
+	queue_index++;
+	queue[queue_index] = -1;
+
+	while(queue_index != 0){
+		last_in_queue = queue[queue_index-1];
+		queue[queue_index-1] = -1;
+		queue_index--;
+		neighbor = GetVertexOriginals(graph,last_in_queue);
+
+		while (neighbor != NULL){
+			if(dist[neighbor->vertexID] == graph->vertexCounter){
+				dist[neighbor->vertexID] = dist[last_in_queue] + 1;
+				queue[queue_index] = neighbor->vertexID;
+				queue_index++;
+				queue[queue_index] = -1;
+			}
+			neighbor = neighbor->next;
+		}
+	}
+
+	for(i=0;i<graph->vertexCounter;i++){
+		max = (max < dist[i] ? dist[i] : max);
+	}
+
+	free(queue);
+	return max;
+}
+
+void set_clusters_diameter(Graph *graph){
+	int i,j;
+	int max_cluster,max_ver;
+	for (i=0;i<results->num_of_clusters;i++){
+		max_cluster = 0;
+		max_ver = 0;
+
+		for(j=0;j<graph->vertexCounter;j++){
+
+			if (GetVertex(graph,j)->clusterID == i+1){
+				max_ver = get_vertex_diameter(j,graph);
+			}
+
+			if (max_ver > max_cluster){
+				max_cluster = max_ver;
+			}
+		}
+
+		results->clusters[i].diameter = max_cluster;
+	}
 }
 
 void print_clusters(){

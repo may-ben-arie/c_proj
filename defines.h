@@ -1,8 +1,5 @@
 /*
  * defines.h
- *
- *  Created on: Sep 9, 2013
- *      Author: mbenarie
  */
 
 #ifndef DEFINES_H_
