@@ -22,8 +22,9 @@ void WriteResultsFile(FILE * resultsFile,Graph * graph) {
 		fprintf(resultsFile,"%s %d\n",vertex->vertexName, vertex->clusterID);
 		vertex = vertex->next;
 	}
-	fprintf(resultsFile,"%d edges:\n",graph->edgeOriginal);
-
+	if(graph->edgeOriginal > 0) {
+		fprintf(resultsFile,"%d edges:\n",graph->edgeOriginal);
+	}
 	vertex = graph->vertices;
 	while(vertex != NULL) {
 		neighbor = GetVertexOriginals(graph,vertex->vertexID);
@@ -42,8 +43,15 @@ void WriteResultsFile(FILE * resultsFile,Graph * graph) {
 	fprintf(resultsFile,"Average weight of an edge within clusters: %.3f\n",results->avg_weight_within_clusters);
 	fprintf(resultsFile,"Average weight of an edge between clusters: %.3f\n",results->avg_weight_between_clusters);
 	for (i=0; i<results->num_of_clusters; i++) {
-		fprintf(resultsFile,"Cluster %d score: %.3f diameter: %d\n",
-				(results->clusters)[i].ID, (results->clusters)[i].score, (results->clusters)[i].diameter);
+		if((results->clusters[i]).diameter == graph->vertexCounter) {
+			fprintf(resultsFile,"Cluster %d score: %.3f diameter: %s\n",
+					(results->clusters)[i].ID, (results->clusters)[i].score, "inf");
+
+		}
+		else {
+			fprintf(resultsFile,"Cluster %d score: %.3f diameter: %d\n",
+				   (results->clusters)[i].ID, (results->clusters)[i].score, (results->clusters)[i].diameter);
+		}
 	}
 }
 
