@@ -44,7 +44,6 @@ void set_score(){
 		}
 	}
 	results->score -= objval;
-	printf("%f clusters score\n",results->score);
 }
 
 int set_clusters(){
@@ -190,9 +189,6 @@ void set_avg_weight(int *vertex_clusters_id){
 	if (num_within > 0){
 		results->avg_weight_within_clusters /= num_within;
 	}
-	printf("\navg_weight_between_clusters=%f",results->avg_weight_between_clusters);
-	printf("\navg_weight_within_clusters=%f",results->avg_weight_within_clusters);
-	printf("\n");
 }
 
 int get_vertex_diameter(int vertex_ID){
