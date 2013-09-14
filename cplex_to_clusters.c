@@ -139,9 +139,10 @@ int comp(const void* obj1,const void* obj2){
 	if (n1 == n2){
 		score1=((Cluster*)obj1)->score;
 		score2=((Cluster*)obj2)->score;
-		return score2-score1;
+		printf("same number of ver, score1=%f score2=%f",score1,score2);
+		return (score1<score2 ? 1 : -1);
 	}
-	return n2-n1;
+	return (n1<n2 ? 1 : -1);
 }
 
 int new_ID_for_old_ID(int old_id){
