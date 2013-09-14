@@ -97,7 +97,7 @@ int set_edge_arr(Graph *graph, double ghost_value) {
 		for (j=i+1;j<graph->vertexCounter;j++){
 			edge_arr[edge_id].vertexID1 = i;
 			edge_arr[edge_id].vertexID2 = j;
-			edge_arr[edge_id].weight = GetEdgeWeightByVertices(graph,i,j);
+			edge_arr[edge_id].weight = get_edge_weight_by_vertices(i,j);
 			if (edge_arr[edge_id].weight == -1)
 				edge_arr[edge_id].weight = -1 * ghost_value;
 			edge_id++;
@@ -145,6 +145,9 @@ int set_matbeg_matcnt_matind_matval(Graph *graph){
 	int* indexes = malloc(numcols * sizeof(int));
 	if (matbeg == NULL || matcnt == NULL || matind == NULL || matval == NULL || indexes == NULL) {
 		perror("Error: Failed to allocate memory");
+		if (indexes != NULL){
+			free(indexes);
+		}
 		return 1;
 	}
 
@@ -190,7 +193,7 @@ int set_matbeg_matcnt_matind_matval(Graph *graph){
 			}
 		}
 	}
-
+	free(indexes);
 	return 0;
 }
 
@@ -244,6 +247,7 @@ int set_cnt_indices_ctype(){
 }
 
 void free_cplex_data(){
+	free_and_null((void **)&probname);
 	free_and_null((void **)&obj);
 	free_and_null((void **)&sense);
 	free_and_null((void **)&rhs);

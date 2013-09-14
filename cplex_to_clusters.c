@@ -5,7 +5,7 @@
 #include "cplex_to_clusters.h"
 #define IS_VALUE_1(X)((1-X)<0.00001)
 
-int get_results(Graph *graph){
+int get_results(){
 	results = malloc(sizeof(Results));
 	if (results == NULL){
 		perror("Error: Failed to allocate memory");
@@ -13,17 +13,17 @@ int get_results(Graph *graph){
 	}
 
 	set_score();
-	if (set_clusters(graph)){
+	if (set_clusters()){
 		return 1;
 	}
-	remove_edges(graph);
+	remove_edges();
 	if(graph->vertexCounter == 2 && graph->edgeOriginal==1) {
-		TwoVerticesOneEdgeCase(graph);
+		TwoVerticesOneEdgeCase();
 	}
 	return 0;
 }
 
-void TwoVerticesOneEdgeCase(Graph * graph) {
+void TwoVerticesOneEdgeCase() {
 	results->num_of_clusters = 1;
 	results->avg_weight_within_clusters = GetEdgeWeightByOriginals(graph,0,1);
 	results->avg_weight_between_clusters = 0;
@@ -47,28 +47,28 @@ void set_score(){
 	printf("%f clusters score\n",results->score);
 }
 
-int set_clusters(Graph *graph){
+int set_clusters(){
 	int *vertex_clusters_id = malloc(graph->vertexCounter * sizeof(int));
 	if (vertex_clusters_id == NULL){
 		perror("Error: Failed to allocate memory");
 		return 1;
 	}
-	set_unsorted_clusters_id(graph,vertex_clusters_id);
+	set_unsorted_clusters_id(vertex_clusters_id);
 
 	results->clusters = malloc(results->num_of_clusters * sizeof(Cluster));
 	if (results->clusters == NULL){
 		perror("Error: Failed to allocate memory");
 		return 1;
 	}
-	create_clusters_array(graph,vertex_clusters_id);
-	sort_clusters(graph,vertex_clusters_id);
+	create_clusters_array(vertex_clusters_id);
+	sort_clusters(vertex_clusters_id);
 	set_avg_weight(vertex_clusters_id);
 	set_clusters_diameter(graph);
-	print_clusters();
+	free(vertex_clusters_id);
 	return 0;
 }
 
-void set_unsorted_clusters_id(Graph *graph, int *vertex_clusters_id){
+void set_unsorted_clusters_id(int *vertex_clusters_id){
 	int i,j,index=0;
 	/* Initialize vertices clusters id */
 	for (i=0;i<graph->vertexCounter;i++){
@@ -95,11 +95,9 @@ void set_unsorted_clusters_id(Graph *graph, int *vertex_clusters_id){
 		index++;
 	}
 	results->num_of_clusters = index;
-	printf("%d clusters\n",index);
-	print_arr_int(vertex_clusters_id,graph->vertexCounter);
 }
 
-void create_clusters_array(Graph *graph, int *vertex_clusters_id){
+void create_clusters_array(int *vertex_clusters_id){
 	int i,ver_ID1,ver_ID2;
 	for (i=0;i<results->num_of_clusters;i++){
 		results->clusters[i].oldID = i;
@@ -121,7 +119,7 @@ void create_clusters_array(Graph *graph, int *vertex_clusters_id){
 	}
 }
 
-void sort_clusters(Graph *graph,int *vertex_clusters_id){
+void sort_clusters(int *vertex_clusters_id){
 	int i;
 	qsort(results->clusters,results->num_of_clusters,sizeof(Cluster),comp);
 	for (i=0;i<results->num_of_clusters;i++){
@@ -131,7 +129,6 @@ void sort_clusters(Graph *graph,int *vertex_clusters_id){
 		vertex_clusters_id[i] = new_ID_for_old_ID(vertex_clusters_id[i]);
 		GetVertex(graph,i)->clusterID = vertex_clusters_id[i];
 	}
-	print_clusters();
 }
 
 int comp(const void* obj1,const void* obj2){
@@ -157,11 +154,11 @@ int new_ID_for_old_ID(int old_id){
 	return -1;
 }
 
-void remove_edges(Graph *graph){
+void remove_edges(){
 	int i;
 	for (i=0;i<numcols;i++){
 		if (edge_arr[i].weight >0 && !IS_VALUE_1(x[i])){
-			DeleteEdgeFromGraph(graph,edge_arr[i].vertexID1,edge_arr[i].vertexID2);
+			delete_edge(edge_arr[i].vertexID1,edge_arr[i].vertexID2);
 		}
 	}
 }
@@ -197,7 +194,7 @@ void set_avg_weight(int *vertex_clusters_id){
 	printf("\n");
 }
 
-int get_vertex_diameter(int vertex_ID, Graph *graph){
+int get_vertex_diameter(int vertex_ID){
 	int max = 0;
 	int *queue,*dist;
 	int queue_index = 0;
@@ -248,6 +245,7 @@ int get_vertex_diameter(int vertex_ID, Graph *graph){
 	}
 
 	free(queue);
+	free(dist);
 	return max;
 }
 
@@ -261,7 +259,7 @@ void set_clusters_diameter(Graph *graph){
 		for(j=0;j<graph->vertexCounter;j++){
 
 			if (GetVertex(graph,j)->clusterID == i+1){
-				max_ver = get_vertex_diameter(j,graph);
+				max_ver = get_vertex_diameter(j);
 			}
 
 			if (max_ver > max_cluster){

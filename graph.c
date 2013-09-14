@@ -4,17 +4,17 @@
 #include <ctype.h>
 #include "graph.h"
 
-void AddVertexToGraph(Graph * graph, char * vertexName) {
+int add_vertex_to_graph(char * vertexName) {
 	Vertex *temp,*right;
-	temp = (struct Vertex *)malloc(sizeof(struct Vertex));
-	temp->neighbors = (struct Neighbor *)malloc(sizeof(struct Neighbor));
-	temp->neighbors->next = NULL;
-	temp->originals = (struct Neighbor *)malloc(sizeof(struct Neighbor));
-	temp->originals->next = NULL;
-	if(temp == NULL || temp->neighbors == NULL || temp->originals == NULL) {
-		printf("Error: Unable to allocate memory for a new vertex.\n");
-		exit(1);
+	temp = malloc(sizeof(Vertex));
+	if(temp == NULL){
+	   printf("Error: Unable to allocate memory for a new vertex.\n");
+	  return 1;
 	}
+	temp->next = NULL;
+	temp->neighbors = NULL;
+	temp->originals = NULL;
+
 	temp->vertexID = graph->vertexCounter;
 	graph->vertexCounter = graph->vertexCounter + 1;
 	strcpy(temp->vertexName, vertexName);
@@ -22,7 +22,7 @@ void AddVertexToGraph(Graph * graph, char * vertexName) {
 		graph->vertices = temp;
 	}
 	else {
-		right = (struct Vertex *) graph->vertices;
+		right = graph->vertices;
 		while(right->next != NULL) {
 			right = right->next;
 		}
@@ -30,31 +30,53 @@ void AddVertexToGraph(Graph * graph, char * vertexName) {
 		right = temp;
 		right->next = NULL;
 	}
+	return 0;
 }
 
-int add_neighbor_to_vertex(Neighbor *neighbors, int newVertexNeighborID, double edgeWeight)
+int add_neighbor_to_vertex(Vertex *vertex, int newVertexNeighborID, double edgeWeight)
 {
-    Neighbor *temp,*right;
-    temp = malloc(sizeof(Neighbor));
-    if(temp == NULL) {
-    	printf("Error: Unable to allocate memory for vertex neighbor.\n");
-    	return 1;
-    }
+    Neighbor *temp,*temp2,*right;
     if (edgeWeight == 0) {
     	printf("Error: edge weight must be positive.\n");
     	return 0;
     }
 
+    temp = malloc(sizeof(Neighbor));
+    temp2 = malloc(sizeof(Neighbor));
+    if(temp == NULL || temp2 == NULL) {
+    	printf("Error: Unable to allocate memory for vertex neighbor.\n");
+    	return 1;
+    }
+
+    temp->next = NULL;
     temp->vertexID = newVertexNeighborID;
     temp->weight = edgeWeight;
-	right = (struct Neighbor *) neighbors;
-	while(right->next != NULL) {
-		right = right->next;
-	}
-	right->next = temp;
-	right = temp;
-	right->next = NULL;
-	return 0;
+    temp2->next = NULL;
+    temp2->vertexID = newVertexNeighborID;
+    temp2->weight = edgeWeight;
+
+    if (vertex->neighbors == NULL){
+    	vertex->neighbors = temp;
+    	vertex->originals = temp2;
+    	return 0;
+    }
+
+    right = vertex->neighbors;
+    while(right->next != NULL) {
+    	right = right->next;
+    }
+    right->next = temp;
+    right = temp;
+    right->next = NULL;
+
+    right = vertex->originals;
+    while(right->next != NULL) {
+       	right = right->next;
+       }
+    right->next = temp2;
+    right = temp2;
+    right->next = NULL;
+    return 0;
 }
 
 
@@ -91,7 +113,7 @@ Vertex * GetVertex(Graph * graph, int vertexID) {
 	return NULL;
 }
 
-double GetEdgeWeightByVertices(Graph * graph, int vertexID1, int vertexID2) {
+double get_edge_weight_by_vertices(int vertexID1, int vertexID2) {
 	Neighbor * neighbors = GetVertexNeighbors(graph, vertexID1);
 	while(neighbors != NULL) {
 		if(neighbors->vertexID == vertexID2) {
@@ -114,14 +136,14 @@ double GetEdgeWeightByOriginals(Graph * graph, int vertexID1, int vertexID2) {
 }
 
 
-void DeleteNeighborByVertex(Graph * graph, int vertexID1, int vertexID2) {
-	Neighbor * head = GetVertexNeighbors(graph, vertexID1);
-	Neighbor * temp = head;
-	Neighbor * prev;
+void DeleteNeighborByVertex(int vertexID, int neighborID) {
+	Vertex *vertex = GetVertex(graph, vertexID);
+	Neighbor * temp = vertex->neighbors;
+	Neighbor * prev = NULL;
 	while(temp != NULL) {
-		if(temp->vertexID == vertexID2) {
-			if(temp == head) {
-				head = temp->next;
+		if(temp->vertexID == neighborID) {
+			if(temp == vertex->neighbors) {
+				vertex->neighbors = temp->next;
 				free(temp);
 				return;
 			}
@@ -131,10 +153,9 @@ void DeleteNeighborByVertex(Graph * graph, int vertexID1, int vertexID2) {
 				return;
 			}
 		}
-		else {
-			prev = temp;
-			temp = temp->next;
-		}
+		prev = temp;
+		temp = temp->next;
+
 	}
 }
 
@@ -147,11 +168,11 @@ int IsNeighborByVertex(Graph * graph, int vertexID1, int vertexID2) {
 	return 0;
 }
 
-void DeleteEdgeFromGraph(Graph * graph, int vertexID1, int vertexID2) {
+void delete_edge(int vertexID1, int vertexID2) {
 	if(IsNeighborByVertex(graph, vertexID1, vertexID2) && IsNeighborByVertex(graph, vertexID2, vertexID1)) {
-		DeleteNeighborByVertex(graph,vertexID1,vertexID2);
-		DeleteNeighborByVertex(graph,vertexID2,vertexID1);
-		graph->edgeCounter = graph->edgeCounter - 1;
+		DeleteNeighborByVertex(vertexID1,vertexID2);
+		DeleteNeighborByVertex(vertexID2,vertexID1);
+		graph->edgeCounter--;
 	}
 }
 
@@ -235,7 +256,7 @@ int verify_add_edge_command(char *param1, char *param2,char *param3, char *param
 		printf("%s%d,%d%s%d%s","Error: Trying to add an edge (",vertexID1,vertexID2,") where vertex ",vertexID2," does not exists.\n");
 		return 1;
 	}
-	if(GetEdgeWeightByVertices(graph,vertexID1,vertexID2) > 0) {
+	if(get_edge_weight_by_vertices(vertexID1,vertexID2) > 0) {
 		printf("%s%d,%d%s","Error: Edge (",vertexID1,vertexID2,") already exists.\n");
 		return 1;
 	}
@@ -243,7 +264,7 @@ int verify_add_edge_command(char *param1, char *param2,char *param3, char *param
 }
 
 int create_graph(FILE * networkFile, double C) {
-	int lineNumber = 0, error;
+	int lineNumber = 0;
 	char line[LINE_LENGTH];
 	char command[LINE_LENGTH];
 	char param1[LINE_LENGTH], param2[LINE_LENGTH], param3[LINE_LENGTH] ,param4[2];
@@ -254,7 +275,7 @@ int create_graph(FILE * networkFile, double C) {
 
 	while(fgets(line, sizeof(line), networkFile) != NULL) {
 		param1[0] = '\0';param2[0] = '\0';param3[0] = '\0';param4[0] = '\0';
-		error = sscanf(line,"%s %s %s %s %s",command, param1, param2, param3, param4);
+		sscanf(line,"%s %s %s %s %s",command, param1, param2, param3, param4);
 
 		lineNumber++;
 
@@ -262,7 +283,9 @@ int create_graph(FILE * networkFile, double C) {
 			if (verify_add_vertex_command(param1,param2)) {
 				continue;
 			}
-			AddVertexToGraph(graph,param1);
+			if (add_vertex_to_graph(param1)){
+				return 1;
+			}
 		}
 
 		else if (!strcmp(command, "add_edge")) {
@@ -273,19 +296,11 @@ int create_graph(FILE * networkFile, double C) {
 			graph->edgeCounter = graph->edgeCounter + 1;
 			graph->edgeOriginal = graph->edgeOriginal + 1;
 
-			if (add_neighbor_to_vertex(GetVertexNeighbors(graph, atoi(param1)), atoi(param2), atof(param3))){
+			if (add_neighbor_to_vertex(GetVertex(graph, atoi(param1)), atoi(param2), atof(param3))){
 				return 1;
 			}
 
-			if (add_neighbor_to_vertex(GetVertexNeighbors(graph, atoi(param2)), atoi(param1), atof(param3))){
-				return 1;
-			}
-
-			if (add_neighbor_to_vertex(GetVertexOriginals(graph, atoi(param1)), atoi(param2), atof(param3))){
-				return 1;
-			}
-
-			if (add_neighbor_to_vertex(GetVertexOriginals(graph, atoi(param2)), atoi(param1), atof(param3))){
+			if (add_neighbor_to_vertex(GetVertex(graph, atoi(param2)), atoi(param1), atof(param3))){
 				return 1;
 			}
 		}
@@ -302,7 +317,7 @@ int create_graph(FILE * networkFile, double C) {
 }
 
 int initialize_graph(double C) {
-	graph = malloc(1 * sizeof(Graph));
+	graph = calloc(1, sizeof(Graph));
 	if (graph == NULL) {
 		perror("Error: failed allocating memory for the graph.\n");
 		return 1;
@@ -326,6 +341,13 @@ void free_graph(){
 	while (next_ver != NULL){
 
 		next_edge = next_ver->neighbors;
+		while (next_edge != NULL){
+			temp_edge = next_edge;
+			next_edge = next_edge->next;
+			free(temp_edge);
+		}
+
+		next_edge = next_ver->originals;
 		while (next_edge != NULL){
 			temp_edge = next_edge;
 			next_edge = next_edge->next;

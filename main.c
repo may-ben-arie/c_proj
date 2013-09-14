@@ -104,16 +104,21 @@ void PrintGraph(Graph * graph) {
 		head = head->next;
 	}
 }
+void close_file(FILE *file){
+	if (file != NULL){
+		fclose(file);
+	}
+}
 
 void free_all_and_close(){
 	free_graph();
 	free_cplex_data();
 	free_results();
 
-	fclose(networkFile);
-	fclose(resultsFile);
-	fclose(clusteringSolutionFile);
-	fclose(bestClustersFile);
+	close_file(networkFile);
+	close_file(resultsFile);
+	close_file(clusteringSolutionFile);
+	close_file(bestClustersFile);
 }
 
 /* Main function of the project
@@ -123,6 +128,11 @@ void free_all_and_close(){
 	iii. C (minus C will be assigned as weight for all ghost edges) - argv[3]
 */
 int main(int argc, char *argv[]) {
+
+	networkFile = NULL;
+	resultsFile = NULL;
+	bestClustersFile = NULL;
+	clusteringSolutionFile = NULL;
 
 	char networkFilePath[PATH_LENGTH];
 	char resultsFilePath[PATH_LENGTH];
@@ -166,9 +176,6 @@ int main(int argc, char *argv[]) {
 
 	strcpy(resultsFilePath,argv[2]);
 	strcat(resultsFilePath,"results");
-
-	resultsFile = fopen(resultsFilePath,"w");
-	VerifyFile(resultsFile,"results");
 
 	WriteResultsFile(resultsFile,graph);
 
