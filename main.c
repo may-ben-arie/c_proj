@@ -194,7 +194,6 @@ int main(int argc, char *argv[]) {
 
 	ReadNetworkFile(networkFile, graph);
 
-	//for debugging only
 	PrintGraph(graph);
 
 	if (graph_to_cplex(graph,argv[2],C)){

@@ -13,7 +13,6 @@ Results *results;
 
 /* Functions */
 int get_results(Graph *graph);
-//void free_reults();
 
 void set_score();
 int set_clusters(Graph *graph);

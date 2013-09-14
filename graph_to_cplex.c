@@ -6,49 +6,49 @@ int graph_to_cplex(Graph *graph, char *output_path, double ghost_value) {
 		return 1;
 	}
 
-	//set probname
+	/* set probname */
 	if (set_probname(output_path)) {
 		free_cplex_data();
 		return 1;
 	}
 
-	//set numcols & numrows
+	/* set numcols & numrows */
 	if (set_numcols_numrows(graph)) {
 		free_cplex_data();
 		return 1;
 	}
 
-	//set edge_arr
+	/* set edge_arr */
 	if (set_edge_arr(graph,ghost_value)) {
 		free_cplex_data();
 		return 1;
 	}
 
-	//set objsen & obj
+	/* set objsen & obj */
 	if (set_objsen_obj()) {
 		free_cplex_data();
 		return 1;
 	}
 
-	//set sense & rhs
+	/* set sense & rhs */
 	if (set_sense_rhs()) {
 		free_cplex_data();
 		return 1;
 	}
 
-	//set matbeg * matcnt & matind & matval
+	/* set matbeg * matcnt & matind & matval */
 	if (set_matbeg_matcnt_matind_matval(graph)){
 		free_cplex_data();
 		return 1;
 	}
 
-	//set lb & ub
+	/* set lb & ub */
 	if (set_lb_ub()) {
 		free_cplex_data();
 		return 1;
 	}
 
-	//set cnt & indices & *ctype
+	/* set cnt & indices & *ctype */
 	if (set_cnt_indices_ctype()) {
 		free_cplex_data();
 		return 1;
@@ -182,22 +182,14 @@ int set_matbeg_matcnt_matind_matval(Graph *graph){
 				matind[indexes[edge_i_k]+2] = con+2;
 				matind[indexes[edge_j_k]+2] = con+2;
 
-				//increase indexes array
 				indexes[edge_i_j] += 3;
 				indexes[edge_i_k] += 3;
 				indexes[edge_j_k] += 3;
 				con += 3;
-
-				//print_arr_int(matind, 3 * numrows);
-				//print_arr_double(matval, 3 * numrows);
-
-
 			}
 		}
 	}
 
-	//print_arr_int(matind, 3 * numrows);
-	//print_arr_double(matval, 3 * numrows);
 	return 0;
 }
 

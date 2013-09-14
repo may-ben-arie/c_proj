@@ -70,12 +70,12 @@ int set_clusters(Graph *graph){
 
 void set_unsorted_clusters_id(Graph *graph, int *vertex_clusters_id){
 	int i,j,index=0;
-	//Initialize vertices clusters id
+	/* Initialize vertices clusters id */
 	for (i=0;i<graph->vertexCounter;i++){
 		vertex_clusters_id[i] = -1;
 	}
 
-	//set vertices clusters id (unsorted)
+	/* set vertices clusters id (unsorted) */
 	for (i=0;i<graph->vertexCounter;i++){
 		if (vertex_clusters_id[i] != -1)
 			continue;
@@ -123,7 +123,6 @@ void create_clusters_array(Graph *graph, int *vertex_clusters_id){
 
 void sort_clusters(Graph *graph,int *vertex_clusters_id){
 	int i;
-	//print_clusters();
 	qsort(results->clusters,results->num_of_clusters,sizeof(Cluster),comp);
 	for (i=0;i<results->num_of_clusters;i++){
 			results->clusters[i].ID = i+1;
