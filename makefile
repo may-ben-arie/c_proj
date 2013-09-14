@@ -6,22 +6,26 @@ CFLAGS+= -ansi -Wall -g
 # Cplex header files:
 CFLAGS+= -I/usr/local/stow/${CPLEX}/lib/${CPLEX}/include
 
-# General flags for linkage:
-LDFLAGS+= -lm -lpthread -lgraph
 # Linkage flags for cplex:
 LDFLAGS+= -L/usr/local/stow/${CPLEX}/lib/${CPLEX}/lib/${CPARCH}/static_pic -lilocplex -lcplex
+
+# General flags for linkage:
+LDFLAGS+= -lm -lpthread -lgraph
 
 all: cluster
 
 clean:
 	rm main.o graph.o graph_to_cplex.o cplex_to_clusters.o output_files.o cluster_editing.o cluster
 
-cluster: main.o graph.o graph_to_cplex.o cplex_to_clusters.o output_files.o cluster_editing.o
+cluster: main.o cluster_editing.o graph.o graph_to_cplex.o cplex_to_clusters.o output_files.o 
 	gcc -o cluster main.o graph.o graph_to_cplex.o cplex_to_clusters.o output_files.o cluster_editing.o $(CFLAGS) $(LDFLAGS)
 
 main.o: main.c graph.h graph_to_cplex.h cplex_to_clusters.h output_files.h
 	gcc -c main.c $(CFLAGS)
 
+cluster_editing.o: cluster_editing.h cluster_editing.c
+	gcc -c cluster_editing.c $(CFLAGS)
+	
 graph.o: graph.c graph.h defines.h
 	gcc -c graph.c $(CFLAGS)
 
@@ -33,9 +37,6 @@ cplex_to_clusters.o: cplex_to_clusters.c cplex_to_clusters.h graph.h graph_to_cp
 
 output_files.o: output_files.c output_files.h graph.h graph_to_cplex.h cplex_to_clusters.h defines.h
 	gcc -c output_files.c $(CFLAGS)
-
-cluster_editing.o: cluster_editing.h cluster_editing.c
-	gcc -c cluster_editing.c $(CFLAGS)
 	
 #TO DO:	
 #
