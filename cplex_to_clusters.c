@@ -141,7 +141,7 @@ int comp(const void* obj1,const void* obj2){
 	n2 = ((Cluster*)obj2)->num_of_ver;
 	if (n1 == n2){
 		score1=((Cluster*)obj1)->score;
-		score2=((Cluster*)obj1)->score;
+		score2=((Cluster*)obj2)->score;
 		return score2-score1;
 	}
 	return n2-n1;
