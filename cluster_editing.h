@@ -39,7 +39,7 @@ double 		objval;
 double 		*x;
 
 /* Include declaration for functions */
-void free_and_null (void **ptr);
 int  cluster();
+void free_and_null (void **ptr);
 
 #endif

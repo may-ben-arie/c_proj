@@ -5,6 +5,9 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
+#define LINE_LENGTH 500
+#define PATH_LENGTH 100
+
 typedef struct Edge {
 	int vertexID1;
 	int vertexID2;

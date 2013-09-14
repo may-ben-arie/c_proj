@@ -13,6 +13,7 @@ Results *results;
 
 /* Functions */
 int get_results(Graph *graph);
+void free_results();
 
 void set_score();
 int set_clusters(Graph *graph);
@@ -27,6 +28,5 @@ void set_clusters_diameter(Graph *graph);
 int get_vertex_diameter(int vertex_ID, Graph *graph);
 void print_clusters();
 void TwoVerticesOneEdgeCase(Graph * graph);
-
 
 #endif

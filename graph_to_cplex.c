@@ -81,6 +81,7 @@ int set_numcols_numrows(Graph *graph) {
 	numcols = x*(x-1) / 2;
 	numrows = 3*x*(x-1)*(x-2) / 6;
 
+	printf("\n\n-----numcols=%d, numrows=%d-----\n",numcols,numrows);
 	return 0;
 }
 

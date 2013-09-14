@@ -32,17 +32,19 @@ void AddVertexToGraph(Graph * graph, char * vertexName) {
 	}
 }
 
-void AddNeighborToVertex(Neighbor * neighbors, int newVertexNeighborID, double edgeWeight)
+int add_neighbor_to_vertex(Neighbor *neighbors, int newVertexNeighborID, double edgeWeight)
 {
     Neighbor *temp,*right;
-    temp = (struct Neighbor *)malloc(sizeof(struct Neighbor));
+    temp = malloc(sizeof(Neighbor));
     if(temp == NULL) {
     	printf("Error: Unable to allocate memory for vertex neighbor.\n");
-    	exit(1);
+    	return 1;
     }
     if (edgeWeight == 0) {
-    	return;
+    	printf("Error: edge weight must be positive.\n");
+    	return 0;
     }
+
     temp->vertexID = newVertexNeighborID;
     temp->weight = edgeWeight;
 	right = (struct Neighbor *) neighbors;
@@ -52,6 +54,7 @@ void AddNeighborToVertex(Neighbor * neighbors, int newVertexNeighborID, double e
 	right->next = temp;
 	right = temp;
 	right->next = NULL;
+	return 0;
 }
 
 
@@ -153,24 +156,24 @@ void DeleteEdgeFromGraph(Graph * graph, int vertexID1, int vertexID2) {
 }
 
 
-int VerifyNewVertexToGraph(Graph* graph, char *param1, char *param2, char *param3) {
+int verify_add_vertex_command(char *param1, char *param2) {
 	Vertex * vertex = graph->vertices;
 	if (!strcmp(param1,"\0")) {
 		printf("%s","Error: The command \"add_vertex\" has no parameters.\n");
-		return 0;
+		return 1;
 	}
 	if (strcmp(param2,"\0")) {
 		printf("%s %s %s","Error: The command \"add_vertex\" has more than 1 parameter. First Parameter:",param1, "\n");
-		return 0;
+		return 1;
 	}
 	while(vertex != NULL) {
 		if(!strcmp(vertex->vertexName,param1)) {
 			printf("%s %s %s","Error: A vertex named",param1,"already exists.\n");
-			return 0;
+			return 1;
 		}
 		vertex = vertex->next;
 	}
-	return 1;
+	return 0;
 }
 
 int isNumeric (const char * s)
@@ -183,17 +186,22 @@ int isNumeric (const char * s)
     return *p == '\0';
 }
 
-int VerifyNewNeighborToGraph(Graph* graph, char *param1, char *param2,char *param3) {
+int verify_add_edge_command(char *param1, char *param2,char *param3, char *param4) {
 	int vertexID1, vertexID2;
 	char weight[500];
 	double realWeight;
+
+	if (strcmp(param4,"\0")){
+		printf("%s","Error: The command \"add_edge\" has more than 3 parameters.\n");
+		return 1;
+	}
 	if (!strcmp(param1,"\0") || !strcmp(param2,"\0") || !strcmp(param3,"\0")) {
 		printf("%s","Error: The command \"add_edge\" has less than 3 parameters.\n");
-		return 0;
+		return 1;
 	}
 	if(!isNumeric(param1) || !isNumeric(param2) || !isNumeric(param3)) {
 		printf("%s","Error: At least on of the parameters of the command \"add_edge\" is not numeric.\n");
-		return 0;
+		return 1;
 	}
 	vertexID1 = atoi(param1);
 	vertexID2 = atoi(param2);
@@ -201,35 +209,133 @@ int VerifyNewNeighborToGraph(Graph* graph, char *param1, char *param2,char *para
 	realWeight = atof(weight);
 	if(vertexID1 < 0 || vertexID2 < 0) {
 		printf("%s","Error: There is an edge with a negative ID for vertex.\n");
-		return 0;
+		return 1;
 	}
 	if(realWeight < 0) {
 		printf("%s","Error: There is an edge with a negative weight.\n");
-		return 0;
+		return 1;
 	}
 	if(realWeight == 0) {
 		printf("%s","Error: There is an edge with a zero weight.\n");
-		return 0;
+		return 1;
 	}
 	if(realWeight > 1) {
 		printf("%s","Error: There is an edge with a weight greater than 1.\n");
-		return 0;
+		return 1;
 	}
 	if(vertexID1 == vertexID2) {
 		printf("%s %d%s","Error: There is a self loop of vertex", vertexID1,".\n");
-		return 0;
+		return 1;
 	}
 	if(vertexID1 >= graph->vertexCounter) {
 		printf("%s%d,%d%s%d%s","Error: Trying to add an edge (",vertexID1,vertexID2,") where vertex ",vertexID1," does not exists.\n");
-		return 0;
+		return 1;
 	}
 	if(vertexID2 >= graph->vertexCounter) {
 		printf("%s%d,%d%s%d%s","Error: Trying to add an edge (",vertexID1,vertexID2,") where vertex ",vertexID2," does not exists.\n");
-		return 0;
+		return 1;
 	}
 	if(GetEdgeWeightByVertices(graph,vertexID1,vertexID2) > 0) {
 		printf("%s%d,%d%s","Error: Edge (",vertexID1,vertexID2,") already exists.\n");
-		return 0;
+		return 1;
 	}
-	return 1;
+	return 0;
+}
+
+int create_graph(FILE * networkFile, double C) {
+	int lineNumber = 0, error;
+	char line[LINE_LENGTH];
+	char command[LINE_LENGTH];
+	char param1[LINE_LENGTH], param2[LINE_LENGTH], param3[LINE_LENGTH] ,param4[2];
+
+	if (initialize_graph(C)){
+		return 1;
+	}
+
+	while(fgets(line, sizeof(line), networkFile) != NULL) {
+		param1[0] = '\0';param2[0] = '\0';param3[0] = '\0';param4[0] = '\0';
+		error = sscanf(line,"%s %s %s %s %s",command, param1, param2, param3, param4);
+
+		lineNumber++;
+
+		if (!strcmp(command, "add_vertex")) {
+			if (verify_add_vertex_command(param1,param2)) {
+				continue;
+			}
+			AddVertexToGraph(graph,param1);
+		}
+
+		else if (!strcmp(command, "add_edge")) {
+			if (verify_add_edge_command(param1,param2,param3,param4)) {
+				continue;
+			}
+			sprintf(param3,"%.3f",atof(param3));
+			graph->edgeCounter = graph->edgeCounter + 1;
+			graph->edgeOriginal = graph->edgeOriginal + 1;
+
+			if (add_neighbor_to_vertex(GetVertexNeighbors(graph, atoi(param1)), atoi(param2), atof(param3))){
+				return 1;
+			}
+
+			if (add_neighbor_to_vertex(GetVertexNeighbors(graph, atoi(param2)), atoi(param1), atof(param3))){
+				return 1;
+			}
+
+			if (add_neighbor_to_vertex(GetVertexOriginals(graph, atoi(param1)), atoi(param2), atof(param3))){
+				return 1;
+			}
+
+			if (add_neighbor_to_vertex(GetVertexOriginals(graph, atoi(param2)), atoi(param1), atof(param3))){
+				return 1;
+			}
+		}
+		else {
+			printf("%s %d %s","Error: Wrong command on line", lineNumber, "of the network file.\n");
+		}
+		strcpy(command,"");
+		strcpy(param1,"");
+		strcpy(param2,"");
+		strcpy(param3,"");
+	}
+
+	return 0;
+}
+
+int initialize_graph(double C) {
+	graph = malloc(1 * sizeof(Graph));
+	if (graph == NULL) {
+		perror("Error: failed allocating memory for the graph.\n");
+		return 1;
+	}
+	graph->vertices = NULL;
+	graph->vertexCounter = 0;
+	graph->edgeCounter = 0;
+	graph->edgeOriginal = 0;
+	graph->C = C;
+	return 0;
+}
+
+void free_graph(){
+	Vertex *next_ver,*temp_ver;
+	Neighbor *next_edge, *temp_edge;
+	if (graph == NULL){
+		return;
+	}
+
+	next_ver = graph->vertices;
+	while (next_ver != NULL){
+
+		next_edge = next_ver->neighbors;
+		while (next_edge != NULL){
+			temp_edge = next_edge;
+			next_edge = next_edge->next;
+			free(temp_edge);
+		}
+
+		temp_ver = next_ver;
+		next_ver = next_ver->next;
+		free(temp_ver);
+	}
+
+	free(graph);
 }

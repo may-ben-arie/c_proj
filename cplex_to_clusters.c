@@ -273,6 +273,17 @@ void set_clusters_diameter(Graph *graph){
 	}
 }
 
+void free_results(){
+	if (results == NULL)
+		return;
+
+	if (results->clusters != NULL){
+		free(results->clusters);
+	}
+
+	free(results);
+}
+
 void print_clusters(){
 	int i;
 	printf("\n ---Clusters---\n");
